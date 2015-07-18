@@ -8,38 +8,51 @@
 # 6. writes the dataset ( 180 rows by 81 cols ) into a file named "GettingCleaningDataProject.txt" and returns it 
 # 
 
+# Reads the test data adding the Subject and Activity labels
+ReadTestData <- function(BaseFilePath ) {
+    # Read test data
+    X_test   <- read.table(file.path(BaseFilePath,"test","X_test.txt"),row.names = NULL,col.names = features)
+    
+    ## Read subject and activity 
+    subject <- read.table(file.path(BaseFilePath,"test","subject_test.txt"))[,1]
+    activity <- read.table(file.path(BaseFilePath,"test","y_test.txt"))[,1]
+    
+    # Creates new columns    
+    X_test$Subject <- subject
+    X_test$Activity <- activity
+    
+    X_test
+}
+
+# Reads the train data with adding Subject and Activity labels
+ReadTrainData <- function(BaseFilePath ) {
+    ## Read the Train Data
+    X_train <- read.table(file.path(BaseFilePath,"train","X_train.txt"),row.names = NULL,col.names = features)
+    ## Read subject and activity and attach two new columns to the Train dataset
+    subject <- read.table(file.path(BaseFilePath,"train","subject_train.txt"))[,1]
+    activity = read.table(file.path(BaseFilePath,"train","y_train.txt"))[,1]
+    
+    X_train$Subject <- subject
+    X_train$Activity <- activity
+    
+    X_train
+}
+
+
 Run.Analysis <- function(UCIHARDatasetFolder = ".") {
     library(dplyr)
     BaseFilePath = file.path(UCIHARDatasetFolder ,"UCI HAR Dataset")
     
-    ## Read the Test Data
-    X_test   <- read.table(file.path(BaseFilePath,"test","X_test.txt"), quote="\"", comment.char="",row.names = NULL)
     
     ## Read the features list and create unique names from it
-    features <- read.table(file.path(BaseFilePath,"features.txt"), quote="\"", comment.char="", stringsAsFactors=FALSE)
-    features[,2] <- make.names(features[,2],unique = TRUE)
+    features <- read.table(file.path(BaseFilePath,"features.txt"))
+    features <- make.names(features[,2],unique = TRUE)
     
-    ## Assign the newly created names to the Test dataset
-    names(X_test) = features[,2]
     
-    ## Read subject and activity and attach two new columns to the Test dataset
-    subject <- read.table(file.path(BaseFilePath,"test","subject_test.txt"), quote="\"", comment.char="", stringsAsFactors=FALSE)
-    X_test$Subject <- subject[,1]
-    activity <- read.table(file.path(BaseFilePath,"test","y_test.txt"), quote="\"", comment.char="", stringsAsFactors=FALSE)
-    X_test$Activity <- activity[,1]
+    ## Read the Test and Train Data
+    X_test  <- ReadTestData(BaseFilePath)
+    X_train <- ReadTrainData(BaseFilePath)
     
-    ## Read the Train Data
-    X_train <- read.table(file.path(BaseFilePath,"train","X_train.txt"), quote="\"", comment.char="", stringsAsFactors=FALSE,row.names = NULL)
-    
-    ## Assign columns names to the Train dataset
-    names(X_train) = features[,2]
-    
-    ## Read subject and activity and attach two new columns to the Train dataset
-    subject <- read.table(file.path(BaseFilePath,"train","subject_train.txt"), quote="\"", comment.char="")
-    X_train$Subject <- subject[,1]
-    activity = read.table(file.path(BaseFilePath,"train","y_train.txt"), quote="\"", comment.char="")
-    X_train$Activity <- activity[,1]
-
     ## Merge Test and Train
     merged = rbind(X_train,X_test)
     
@@ -53,8 +66,7 @@ Run.Analysis <- function(UCIHARDatasetFolder = ".") {
     # Add descriptive labels to the Activity column using factors
     sum1$Activity = factor(sum2$Activity, labels = c("Walking","Walking_Upstairs","Walking_Downstairs","Sitting","Standing","Laying"))
     
-    
-    #writes the dataset to a file and returns it
+    #writes the dataset to a file and return it
     write.table( sum1,file = "GettingCleaningDataProject.txt" , row.name=FALSE)  
     sum1
 }
