@@ -28,10 +28,12 @@ ReadTestData <- function(BaseFilePath ) {
 ReadTrainData <- function(BaseFilePath ) {
     ## Read the Train Data
     X_train <- read.table(file.path(BaseFilePath,"train","X_train.txt"),row.names = NULL,col.names = features)
+    
     ## Read subject and activity and attach two new columns to the Train dataset
     subject <- read.table(file.path(BaseFilePath,"train","subject_train.txt"))[,1]
     activity = read.table(file.path(BaseFilePath,"train","y_train.txt"))[,1]
     
+    # Creates new columns    
     X_train$Subject <- subject
     X_train$Activity <- activity
     
@@ -43,11 +45,9 @@ Run.Analysis <- function(UCIHARDatasetFolder = ".") {
     library(dplyr)
     BaseFilePath = file.path(UCIHARDatasetFolder ,"UCI HAR Dataset")
     
-    
     ## Read the features list and create unique names from it
     features <- read.table(file.path(BaseFilePath,"features.txt"))
     features <- make.names(features[,2],unique = TRUE)
-    
     
     ## Read the Test and Train Data
     X_test  <- ReadTestData(BaseFilePath)
