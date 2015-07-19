@@ -9,7 +9,7 @@
 # 
 
 # Reads the test data adding the Subject and Activity labels
-ReadTestData <- function(BaseFilePath ) {
+ReadTestData <- function(BaseFilePath,colnames ) {
     # Read test data
     X_test   <- read.table(file.path(BaseFilePath,"test","X_test.txt"),row.names = NULL,col.names = features)
     
@@ -25,9 +25,9 @@ ReadTestData <- function(BaseFilePath ) {
 }
 
 # Reads the train data with adding Subject and Activity labels
-ReadTrainData <- function(BaseFilePath ) {
+ReadTrainData <- function(BaseFilePath,colnames ) {
     ## Read the Train Data
-    X_train <- read.table(file.path(BaseFilePath,"train","X_train.txt"),row.names = NULL,col.names = features)
+    X_train <- read.table(file.path(BaseFilePath,"train","X_train.txt"),row.names = NULL,col.names = colnames)
     
     ## Read subject and activity and attach two new columns to the Train dataset
     subject <- read.table(file.path(BaseFilePath,"train","subject_train.txt"))[,1]
@@ -40,18 +40,17 @@ ReadTrainData <- function(BaseFilePath ) {
     X_train
 }
 
-
 Run.Analysis <- function(UCIHARDatasetFolder = ".") {
     library(dplyr)
     BaseFilePath = file.path(UCIHARDatasetFolder ,"UCI HAR Dataset")
     
     ## Read the features list and create unique names from it
-    features <- read.table(file.path(BaseFilePath,"features.txt"))
-    features <- make.names(features[,2],unique = TRUE)
-    
+    features <- read.table(file.path(BaseFilePath,"features.txt"))[,2]
+  
     ## Read the Test and Train Data
-    X_test  <- ReadTestData(BaseFilePath)
-    X_train <- ReadTrainData(BaseFilePath)
+    #  The features will be passed as colnames, read.table will fix the names to comply with naming conventions
+    X_test  <- ReadTestData(BaseFilePath,features)
+    X_train <- ReadTrainData(BaseFilePath,features)
     
     ## Merge Test and Train
     merged = rbind(X_train,X_test)
@@ -64,7 +63,7 @@ Run.Analysis <- function(UCIHARDatasetFolder = ".") {
     sum1 = summarise_each(group_by_activity_subject,funs(mean),1:(ncol(group_by_activity_subject)-2) )
     
     # Add descriptive labels to the Activity column using factors
-    sum1$Activity = factor(sum2$Activity, labels = c("Walking","Walking_Upstairs","Walking_Downstairs","Sitting","Standing","Laying"))
+    sum1$Activity = factor(sum1$Activity, labels = c("Walking","Walking_Upstairs","Walking_Downstairs","Sitting","Standing","Laying"))
     
     #writes the dataset to a file and return it
     write.table( sum1,file = "GettingCleaningDataProject.txt" , row.name=FALSE)  
